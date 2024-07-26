@@ -1,0 +1,23 @@
+[[extend "layout.html"]]
+
+[[block page_head]]
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+[[end]]
+
+
+
+    
+    
+    
+<h1>Gráfico 1</h1>
+<div id="grafbovcord_a"></div>
+
+<script type="text/javascript">
+        var chartDiv = document.getElementById('grafbovcord_a');
+        chartDiv.innerHTML = [[=XML(chart_html)]];
+</script>
+
+
+<a href="https://www.agronet.gov.co/estadistica/Paginas/home.aspx?cod=109">Ir a la Fuente</a>

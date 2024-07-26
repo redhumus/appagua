@@ -1,0 +1,20 @@
+[[extend "layout.html"]]
+
+[[block page_head]]
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+[[end]]
+
+
+
+<h1>Gráfico 1</h1>
+<div id="lineat"></div>
+
+<script type="text/javascript">
+        var chartDiv = document.getElementById('lineat');
+        chartDiv.innerHTML = [[=XML(lineat_html)]];
+</script>
+
+
+<p>Fuente: Elaboración propia</p>

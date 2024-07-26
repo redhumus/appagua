@@ -1,0 +1,986 @@
+[[extend "layout.html"]]
+
+
+[[block page_head]]
+
+    <title>CALENDARIO ESTACIONAL BAJO SINÚ</title>
+<!-- Basado en https://www.lawebdelprogramador.com/codigo/archivos3/js_rotarImagen.php -->
+    <meta charset="utf-8">
+
+    <script>
+
+        var kcRotateDial=function(elem){
+
+            var output=this;
+
+            //Preventing elem to being selected on IE
+
+            if(document.all && !window.opera) elem.setAttribute("unselectable","on");
+
+            //Public Properties
+
+            output.rad=0;
+
+            output.deg=0;
+
+            output.per=0;
+
+            output.fullRad=0;
+
+            output.fullDeg=0;
+
+            output.fullPer=0;
+
+            output.spin=0;
+
+            output.clock=false;
+
+            //Private properties
+
+            var drag=false;
+
+            var pos=[];
+
+            var size=[];
+
+            var axis=[];
+
+            var cursor=[];
+
+            var rad=0;
+
+            var lastRad=0;
+
+            var lastPer=0;
+
+            var lastFullRad=0;
+
+            var maxRad=6.283185307179586;
+
+            var maxDeg=360;
+
+            var maxPer=100;
+
+            var Dx=[];
+
+            var Dy=[];
+
+            //Public Methods
+
+            output.onchange=function(){};
+
+            //Private Methods
+
+            function preventDefault(e){
+
+                //prevent event's default action
+
+                if(window.event) e=window.event;
+
+                if(e.preventDefault){e.preventDefault()}else{e.returnValue=false};
+
+            }
+
+            function getPos(elem){
+
+                //get the position [left,top] relative to whole document
+
+                var tmp=elem;
+
+                var left=tmp.offsetLeft;
+
+                var top=tmp.offsetTop;
+
+                while (tmp=tmp.offsetParent) left += tmp.offsetLeft;
+
+                tmp=elem;
+
+                while(tmp=tmp.offsetParent) top+=tmp.offsetTop;
+
+                return [left,top];
+
+            }
+
+            function getSize(elem){
+
+                //return the size [width,height] of the element
+
+                return [elem.offsetWidth,elem.offsetHeight];
+
+            }
+
+            function getAxis(elem){
+
+                //return the center point [left,top] of the element
+
+                return [getPos(elem)[0]+getSize(elem)[0]/2,getPos(elem)[1]+getSize(elem)[1]/2];
+
+            }
+
+            function getCursorPos(e){
+
+                //return the cursor's position [x,y]
+
+                var cursorPos;
+
+                if(window.event) e=window.event;
+
+                if(e.clientX) cursorPos=[e.clientX,e.clientY];
+
+                if(e.pageX) cursorPos=[e.pageX,e.pageY];
+
+                try{if(e.targetTouches[0]) cursorPos=[e.targetTouches[0].pageX,e.targetTouches[0].pageY];}catch(err){};
+
+                return cursorPos;
+
+            }
+
+            function getAngle(e){
+
+                //getting rotation angle by Arc Tangent 2
+
+                var rad;
+
+                pos=getPos(elem);
+
+                size=getSize(elem);
+
+                axis=getAxis(elem);
+
+                cursor=getCursorPos(e);
+
+                rad=Math.atan2(cursor[1]-axis[1],cursor[0]-axis[0]);
+
+                //correct the 90° of difference starting from the Y axis of the element
+
+                rad+=maxRad/4;
+
+                //transform opposite angle negative value, to possitive
+
+                if(rad<0) rad+=maxRad;
+
+                return rad;
+
+            }
+
+            function setDrag(e,bool){
+
+                //set or unset the drag flag
+
+                if(bool){
+
+                    preventDefault(e);
+
+                    rad=getAngle(e);
+
+                    drag=true;
+
+                }else{
+
+                    drag=false;
+
+                }
+
+            }
+
+            function rotate(e){
+
+                //Rotate the element
+
+                if(drag){
+
+                    //setting control variables
+
+                    var cursorRad;
+
+                    var relativeRad;
+
+                    var rotationRad;
+
+                    cursorRad=getAngle(e);
+
+                    relativeRad=cursorRad-rad;
+
+                    var rotationRad=lastRad+relativeRad;
+
+                    if(rotationRad<0) rotationRad=maxRad;
+
+                    if(rotationRad>maxRad) rotationRad=0;
+
+                    rad=cursorRad;
+
+ 
+
+                    //applying rotation to element
+
+                    elem.style.MozTransform="rotate("+rotationRad+"rad)";
+
+                    elem.style.WebkitTransform="rotate("+rotationRad+"rad)";
+
+                    elem.style.OTransform="rotate("+rotationRad+"rad)";
+
+                    elem.style.MsTransform="rotate("+rotationRad+"rad)";
+
+                    //rotation Matrix for IExplorer
+
+                    if(document.all && !window.opera){
+
+                        var iecos = Math.cos(cursorRad);
+
+                        var iesin = Math.sin(cursorRad);
+
+                        Dx[0]=-(size[0]/2)*iecos + (size[1]/2)*iesin + (size[0]/2);
+
+                        Dx[1]=-(size[0]/2)*iesin - (size[1]/2)*iecos + (size[1]/2);
+
+                        elem.style.filter="progid:DXImageTransform.Microsoft.Matrix(M11="+iecos+", M12="+-iesin+", M21="+iesin+", M22="+iecos+", Dx="+Dx[0]+", Dy="+Dx[1]+", SizingMethod=auto expand)";
+
+                    }
+
+                    //assigning values to public properties
+
+                    output.rad=rotationRad;
+
+                    output.deg=maxDeg*output.rad/(2*Math.PI);
+
+                    output.per=(output.rad*maxPer)/maxRad;
+
+ 
+
+                    if((lastPer<=100 && lastPer>=60) && (output.per>=0 && output.per<=30)) output.spin++;
+
+                    if((lastPer<=30 && lastPer>=0) && (output.per>=60 && output.per<=100)) output.spin--;
+
+ 
+
+                    output.fullRad=output.rad+(maxRad*output.spin);
+
+                    output.fullDeg=output.deg+(maxDeg*output.spin);
+
+                    output.fullPer=output.per+(maxPer*output.spin);
+
+ 
+
+                    if(lastFullRad<output.fullRad) output.clock=true;
+
+                    if(lastFullRad>output.fullRad) output.clock=false;
+
+ 
+
+                    lastRad=rotationRad;
+
+                    lastPer=output.per;
+
+                    lastFullRad=output.fullRad;
+
+                    output.onchange();
+
+                }
+
+            }
+
+            //Listen events
+
+            elem.onmousedown=function(e){setDrag(e,true);}
+
+            document.onmouseup=function(e){setDrag(e,false);}
+
+            document.onmousemove=function(e){rotate(e);}
+
+            try{elem.addEventListener('touchstart',function(e){setDrag(e,true);})}catch(err){}
+
+            try{document.addEventListener('touchend',function(e){setDrag(e,false);})}catch(err){}
+
+            try{document.addEventListener('touchmove',function(e){rotate(e)})}catch(err){}
+
+        }
+
+ 
+
+        window.onload=function()
+
+        {
+
+            var elem=document.getElementById("spin-ball");
+
+            var dial=kcRotateDial(elem);
+
+        }
+
+    </script>
+
+    <style>
+
+        img {margin:35px 0 0 35px;}
+
+    </style>
+
+[[end]]
+
+ 
+
+
+<img src="https://archive.org/download/Agua-contando-historias/calendario-sinu.png" id="spin-ball" align="center">
+
+ 
+ 
+ <h1 id="calendarios-estacionales">Calendarios estacionales</h1>
+<h2 id="calendario-semanal-1">Calendario semanal 1</h2>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 1%" />
+<col style="width: 24%" />
+<col style="width: 52%" />
+<col style="width: 10%" />
+<col style="width: 1%" />
+<col style="width: 6%" />
+<col style="width: 1%" />
+<col style="width: 1%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>DIA</th>
+<th>LUNES</th>
+<th>MARTES</th>
+<th>MIÉRCOLES</th>
+<th>JUEVES</th>
+<th>VIERNES</th>
+<th>SÁBADO</th>
+<th>DOMINGO</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>HOMBRES</td>
+<td>3am - 9am: Pescadores de atarraya 5am: Agricultor-campesino Algunos
+también preparan café Pescador trasmayo 11am———- 2pmAntes se pilaba el
+arroz</td>
+<td></td>
+<td></td>
+<td></td>
+<td>4-6pm: Juego de dominó. Hay varios lugares</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>MUJERES</td>
+<td>5am: Preparar café y desayuno: Sancochar yuca, queso,suero, pescado
+Oficios Preparar almuerzo <br> PM: Televisión, visitas a vecinos</td>
+<td>Entre los pescadores: Muchos pescan mientras la mujer sale a vender.
+Algunas le compran al marido y salen a vender. Unas venden puerta a
+puerta, otras ponen un puesto en el mercado y otras llevan a Lorica,
+Tuchín y otros pueblos 4pm: Nos sentamos en el portón y siempre debemos
+saludar, si no, decimos: “Más teso vas para el cementerio”</td>
+<td>Algunas mujeres aún lavan a mano con manduco y con los pies con
+batea</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>NIÑAS</td>
+<td>5-5:30: Al colegio Llegar en bicicleta o a pie 12: Salida colegio
+1pm: Jornada tarde Hacer tareas y jugar videojuegos, jóvenes
+chatear</td>
+<td>Deportes: Fútlbol, béisbol, patinaje <br> Momil: Talleres de
+arte</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>NIÑOS</td>
+<td>5-5:30: Al colegio Llegar en bicicleta o a pie 12: Salida colegio
+1pm: Jornada tarde Hacer tareas y jugar videojuegos, jóvenes
+chatear</td>
+<td>Ya no es común que NNA vendan dulces, frutas. Ahora el tiempo libre
+es para tareas, juegos, danzas, ya no saben pilar el arroz</td>
+<td>7-10pm: Colegio nocturno: Bachillerato por ciclos</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="calendario-semanal-2">Calendario semanal 2</h2>
+<table>
+<colgroup>
+<col style="width: 0%" />
+<col style="width: 70%" />
+<col style="width: 2%" />
+<col style="width: 3%" />
+<col style="width: 7%" />
+<col style="width: 2%" />
+<col style="width: 5%" />
+<col style="width: 7%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>DIA</th>
+<th>LUNES</th>
+<th>MARTES</th>
+<th>MIÉRCOLES</th>
+<th>JUEVES</th>
+<th>VIERNES</th>
+<th>SÁBADO</th>
+<th>DOMINGO</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>HOMBRES</td>
+<td>Toda la semana: 4AM-12M: Hasta el día siguiente, en la ciénaga El
+horario varía: En aguas arriba se pesca de un día para otro, en época
+seca no. Agricultor: En época seca o La Primera, mes de abril los
+cultivos de rosa, de pancoger (maíz, yuca, arroz). Enero a marzo:
+Cultivo de maíz y patilla. En la patilla no hay descanso, se trabaja los
+3 meses de actividad permanente. Adecuación de terreno, fumigación,
+arreglo de cercas, arreglo de canales. La labor va de 5am - 12m y de
+2pm-a 6pm. Ordeño diario. En el campo semillero de patilla diario. En la
+segunda (Agosto): Ganadería: 5am: Ordeño, fumigación de ganado, arreglo
+de cerca, limpieza de potrero (ciénaga). Encierro de ganado 4pm. El
+ganado se moviliza a terrenos secos en época de inundación. Avicultura:
+Todos los días durante 45 días, alimentación y vacunación de pollos.
+Sacrificio y comercialización de pollos.</td>
+<td>Canoa, canalete y palanca</td>
+<td>Atarraya, trasmayo, flechas, trastra</td>
+<td>Antes se panchaba en verano hasta los años 80. Salaban el pescado en
+los mismos sitios de pesca</td>
+<td>Especies extintas: Doncella. barbú,</td>
+<td>Sitios de pesca: Espejos de agua, caños, ciénagas, Payón, El
+zapal</td>
+<td>Descanso. Visita a la familia. 6am: Ordeño. 2:00pm: Encierro
+terneros</td>
+</tr>
+<tr class="even">
+<td>MUJERES</td>
+<td>Labores de casa desde las 4am. Cuidado y crianza de hijos, atención
+a la pareja, comerciantes de pescado, preparación de pescado. Algunas se
+dedican a la elaboración de artesanías (tejido). Atención a animales
+domésticos. Pilar arroz era actividad de mujeres y hombres. Avicultura.
+En semana santa preparan comidas típicas del pueblo</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>Llevan a los hijos a recrearse al parque</td>
+<td>Asistencia a misa y cultos</td>
+</tr>
+<tr class="odd">
+<td>NIÑAS</td>
+<td>Asistencia a hogares de bienestar familiar, asistencia a colegios,
+práctica de deportes, aprender labores domésticas de la madre.
+Recreación con amistades. Asistencia a centro cultura a hacer deportes,
+danzas. <br> Presencia de niñas con discapacidad que requieren atención
+permanente de lunes a lunes</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>Caminatas al Cerro Mohán <br> Comer helados</td>
+<td>Asistencia a misa</td>
+</tr>
+<tr class="even">
+<td>NIÑOS</td>
+<td>Asistencia a hogares y escuelas, pŕactica de deportes como el
+fútbol. sotfball, juegos tradicionales. Natación de esparcimiento en la
+ciénaga en horas de la tarde</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>Paseos a la ciénaga en canoas. Captura de iguanas y aves</td>
+<td>Formación de grupos para hacer actividades no permitidas como
+pequeños robos de bombillas.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="calendario-semanal-3">Calendario semanal 3</h2>
+<table>
+<colgroup>
+<col style="width: 3%" />
+<col style="width: 24%" />
+<col style="width: 14%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>DÍA</th>
+<th>LUNES</th>
+<th>MARTES</th>
+<th>MIÉRCOLES</th>
+<th>JUEVES</th>
+<th>VIERNES</th>
+<th>SÁBADO</th>
+<th>DOMINGO</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>HOMBRES</td>
+<td>Trabajos <br> - Agricultura <br> - Pesca <br> - Jornaleo
+(5-10am)</td>
+<td>Pesca: 3am - 7am <br> - Malla: 2pm-6pm</td>
+<td>- Agricultura <br> - Pesca</td>
+<td>- Agricultura <br> - Pesca</td>
+<td>- Agricultura <br> - Pesca</td>
+<td>- Agricultura - Pesca &gt; 12m</td>
+<td>Libre - Iglesia <br> - Labores domésticas</td>
+</tr>
+<tr class="even">
+<td>MUJERES</td>
+<td>-Labores de la casa <br> - Trabajan</td>
+<td>Labores</td>
+<td>Labores</td>
+<td>Labores</td>
+<td>Labores</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>NIÑAS</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>NIÑOS</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="calendario-anual-1">Calendario anual 1</h2>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 32%" />
+<col style="width: 32%" />
+<col style="width: 2%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Celebraciones / Conmemoriaciones</th>
+<th>Actividades</th>
+<th>Lluvia/Sequía</th>
+<th>Mes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Chimá: 14 de enero: Festival de la panocha de coco</td>
+<td>- Siembra maíz <br> - Siembra patilla <br> - Pesca en caños</td>
+<td>- Hicoteas ponen huevos</td>
+<td>ENERO</td>
+</tr>
+<tr class="even">
+<td>- Purísima: Fiesta patronal de la Virgen de la Candelaria <br> - 3
+de febrero: Corralejas</td>
+<td>- Siembra de maíz <br> - Siembra de patilla <br> - Siembra
+hortalizas: Berenjena, tomate, habichuela, fríjo, melón, pepino cohombro
+y blanco, ahuyama <br> - Pesca en caños <br> - Quemas</td>
+<td>- Mes seco <br> - Urrá ha descargado <br> - Tanga pone los huevos
+<br> - Altamisa, aramago (vegetales, plantas estacioarias por el
+verano)</td>
+<td>FEBRERO</td>
+</tr>
+<tr class="odd">
+<td>- Chimá: Fiestas patrolanes Santo Domingo Vidal</td>
+<td>- No se siembra por riesgo de anegación de ciénaga <br> - Cosecha
+patilla. <br> - Pesca caños <br> - Quemas</td>
+<td>- Mes más seco</td>
+<td>MARZO</td>
+</tr>
+<tr class="even">
+<td>- Feria artesanal en Chimá y Momil <br> - Semana Santa</td>
+<td>- Cosecha patilla y lo sembrado desde diciembre <br> - Pesca caños
+<br> - Sacar ganado de regreso</td>
+<td>- Comienzan lluvias <br> - Empieza a llenar la ciénaga <br> -
+Arroyos <br> - En algunas zonas Urrá ha descargado <br> - Se va el pato
+barraquete <br> - Nacen hicoteas con primeras lluvias</td>
+<td>ABRIL</td>
+</tr>
+<tr class="odd">
+<td>- Purísima: Festival del diabolín y cumpleaños municipio</td>
+<td>- Pesca general en la ciénaga</td>
+<td>- Aumentan lluvias y reverdece <br> - El río empieza a llenar <br> -
+Baja bocachico flaco “coroco”</td>
+<td>MAYO</td>
+</tr>
+<tr class="even">
+<td>Momil. Corralejas. Fiestas patronales de San Antonio</td>
+<td>- Se buscan tierras altas para poder cultivar, sean propias,
+arrendadas o de familiares (junio - noviembre)</td>
+<td></td>
+<td>JUNIO</td>
+</tr>
+<tr class="odd">
+<td>16 de Julio, Purísima: Carreras de caballos <br> -28-29 Julio,
+Chimá: Carreras de caballos, fútbol, actos culturales, ciclismo,
+atletismo <br> - 26 de julio, Sitio Viejo: Fiestas de Santa Ana</td>
+<td>- Se buscan tierras altas para poder cultivar, sean propias,
+arrendadas o de familiares (junio - noviembre)</td>
+<td>- Veranillo de San Juan (Desde 2016 no en Chimá) <br> - Patos, otras
+aves de la ciénaga (piscingo, malibú, polloneta, chavarrí o faisán)
+anidad. (Junio-Julio)</td>
+<td>JULIO</td>
+</tr>
+<tr class="even">
+<td>5-7 Agosto, Chimá: Fiestas patronales San Emidio <br> - 14 de
+agosto, Arache: Carreras de caballos</td>
+<td>- Se buscan tierras altas para poder cultivar, sean propias,
+arrendadas o de familiares (junio - noviembre)</td>
+<td>Manatíes se concentran para aparearse en la zona de Manatíes</td>
+<td>AGOSTO</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>- Se buscan tierras altas para poder cultivar, sean propias,
+arrendadas o de familiares (junio - noviembre)</td>
+<td>- Garzas comienzan a anidar en sectores de la Ciénaga. Se concentran
+en “El Islote” - Pato barraquete llega (hasta abril)</td>
+<td>SEPTIEMBRE</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>- Se buscan tierras altas para poder cultivar, sean propias,
+arrendadas o de familiares (junio - noviembre)</td>
+<td></td>
+<td>OCTUBRE</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>- Se buscan tierras altas para poder cultivar, sean propias,
+arrendadas o de familiares (junio - noviembre)</td>
+<td></td>
+<td>NOVIEMBRE</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td></td>
+<td>DICIEMBRE</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Notas:
+<ul>
+<li>Conflicto por el uso de la tierra entre ganaderos y patilleros. El
+ganado pisotea los cultivos y las especies nativas además de
+problemática por servidumbres de paso.</li>
+<li>Las iglesias en los pueblos de la Ciénaga miran a ella. El
+transporte antes era fluvial. Cuando se pasó a las carreteras Chimá
+quedó aislada. Momil tenía flota de lanchas para Lorica. La obra de la
+carrertera Chinú-Lorica fue en el gobierno de Gustavo Rojas Pinilla
+(1952-1958).</li>
+<li>Aquí es el Finzenú</li>
+<li>El Maestro Benjamín Puche dijo que en América se referencia a México
+como lugar de origen del maíz, pero en el cerro Mohán también se pudo
+cultivar maíz y se habla que fue en el año 500 AC, lo cual hace de Momil
+un baluarte cultural de la civilización Zenú.</li>
+<li>Se dice que la isla de Chimá es artificial. Todo Chimá desde el
+charco “El Cañito”, “Peralta” y “La Isla” tiene rastros de terrazas
+Zenúes. “El Islote”, “Matelata”, “Boca e tiesto”, “La Vuelta el
+Sombrero”, son antigüos asentamientos Zenúes.</li>
+<li>En Momil también hay vestigios Zenúes, los campesinos lo hacían aún
+en “La Boca de la palma” había comercio desde Sucre.</li>
+<li>Gente de la Ciénaga también arrienda para el pastoreo, hacen
+cercados.</li>
+<li>¿Por qué se cultiva en la ciénaga? R= Porque no tenemos tierra donde
+cultivar</li>
+<li>En Diciembre y otros momentos ha ocurrido que se han perdido
+cosechas por las descargas repentinas de Urrá. En toda la ciénaga se han
+perdido cultivos.</li>
+<li>Afectación no sólo productiva. Se alteran los ciclos naturales del
+ecosistema y sus especies. Se afectan bancos de semillas naturales de
+especies vegetales.</li>
+</ul></li>
+</ul>
+<h2 id="calendario-anual-2">Calendario anual 2</h2>
+<table>
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 59%" />
+<col style="width: 2%" />
+<col style="width: 2%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Celebraciones / Conmemoriaciones</th>
+<th>Actividades</th>
+<th>Lluvia/Sequía</th>
+<th>Mes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>17 de enero, Chimá: Día del desaparecido - 6 y 7 de enero, Momil:
+Fiesta de los reyes magos (alborada, carreras de caballos, fandango,
+ciclismo, competencias en canoas, varas de premio, casetas.</td>
+<td>- El pescador se vuelve agricultor (yuca, maíz, frijol) <br> -
+Terratenientes siembran sorgo (Zona “El demental?”, “Burro muerto”,
+“Pozo el totumo” (Arroz, maíz) <br> - La ciénaga se seca, se vuelve un
+desierto y se vuelve propicia para el pastoreo de ganado. Movimiento de
+ganado desde Sucre.</td>
+<td></td>
+<td>ENERO</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>- Corregimiento Carolina. Los terratenientes siembran, arroz, maíz y
+sorgo. <br> - En 2008 empezaron a traer búfalos de Chinú al a zona de
+“Tres Bocas” en Chimá - Búfalos de fincas de Antioquia vienen al sector
+“El Chocho” en Momil, sector “Zapal” frente al cerro Mohán en Momil.
+<br> - Construcción y ampliación de terraplenes</td>
+<td></td>
+<td>FEBRERO</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>- Inicio de llenado de de charcos y pozoz profundos para 2018 <br> -
+Se fertilizan naturalmente los terrenos de la ciénaga <br> -
+Construcción de terraplenes (terratenientes ganaderos) <br> - Desde el
+mes de marzo que vuelve el agua los pescadores se convierten en
+cosecheros.</td>
+<td></td>
+<td>MARZO</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td></td>
+<td>ABRIL</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>- Año 2017, Purísima sector Barrio La Candelaria: Proyecto de
+vivienda de interés social gobierno nacional. 45 se apoderaron del
+proyecto. <br> - Tomas de tierras en mayo de 2018</td>
+<td></td>
+<td>MAYO</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>- En el año 2012, cuando iniciaron los periodos de lluvia, sembraron
+aproximadamente 40 Has. de palma <br> - Llenado de estanques para
+cultivar peces en invierno</td>
+<td></td>
+<td>JUNIO</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>- Cultivo de peces en estanques piscícolas. Siembra durante todo el
+año en espejos de agua con produccioń permanente.</td>
+<td></td>
+<td>JULIO</td>
+</tr>
+<tr class="even">
+<td>15 y 16 de agosto, Los Corrales, Purísima: Festival del bollo dulce
+- 16 de agosto, Arache: Fiesta de San Roque.</td>
+<td></td>
+<td></td>
+<td>AGOSTO</td>
+</tr>
+<tr class="odd">
+<td>10 de agosto, Chimá: Congregación familiar para celebrar la amistad.
+Actividades y encuentros comunitarios</td>
+<td>la ciénaga está llena. Normalmente las actividades productivas son
+de pesca</td>
+<td></td>
+<td>SEPTIEMBRE</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td></td>
+<td>OCTUBRE</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td></td>
+<td>NOVIEMBRE</td>
+</tr>
+<tr class="even">
+<td>7 y 8 de diciembre, Momil: Celebración Virgen de la Concepción.
+Procesión en la madrugada. - 13 de diciembre, Arache: Procesión de Santa
+Lucía la Vírgen de los ojos</td>
+<td></td>
+<td></td>
+<td>DICIEMBRE</td>
+</tr>
+</tbody>
+</table>
+<h2 id="calendario-anual-3">Calendario anual 3</h2>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 53%" />
+<col style="width: 16%" />
+<col style="width: 1%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Celebraciones / Conmemoriaciones</th>
+<th>Actividades</th>
+<th>Lluvia/Sequía</th>
+<th>Mes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1a o 2a semana, Cotocá: Festival con carreras de caballos</td>
+<td>- Monteadores (cazadores) que van de unas comunidades a otras
+Recolecta patilla, melón, pepino, tomate, ají <br> - Quemas
+(enero-abril)Recolecta patilla, melón, pepino, tomate, ají Recolecta
+patilla, melón, pepino, tomate, ají <br> - Siembra de patilla en el lado
+norte de Chimá, Purísima, Momil, Lorica <br> - No se siembra patilla en
+San Pablo ni Las Arepas por robos de patilla Recolecta patilla, melón,
+pepino, tomate, ají <br> - Fumigaciones con avión</td>
+<td>- Sequía - Incubación - HIcotea - Pájaros - Tortuga de río -
+Neblinas - Urrá afecta ciclos de eclosión huevos - Perros para
+cacería</td>
+<td>ENERO</td>
+</tr>
+<tr class="even">
+<td>- Carnavales en Palo de Agua (corregimiento de Lorica) - Festival
+del arroz colorado - 16 de febrero de 1981: Entrada a la toma de tierras
+en San Pablo</td>
+<td></td>
+<td>- Menor talla de pescado - Sigue sequía - Neblinas</td>
+<td>FEBRERO</td>
+</tr>
+<tr class="odd">
+<td>- 22, 23 y 24 de marzo, San Pablo: Festival del maíz Sereno - San
+Antero: Festival del burro</td>
+<td>Recolecta patilla, melón, pepino, tomate, ají</td>
+<td>- Pico de reproduccción hicoteas - Mayor sequía</td>
+<td>MARZO</td>
+</tr>
+<tr class="even">
+<td>Semana Santa: Chicha de maíz, hicotea, arroz con flijo, dulces de
+plátano, ñame, plamito, bollo limpio, chocolate de maíz y cacao -
+Sábado: 6 días de toros de lidia en Cotorra - 23 de Abril, Sarandelo,
+vereda Mate e caña: Festival de la piña</td>
+<td>- Siembra maiz y arroz - Cosecha de patilla - Inicio de temporada de
+mangos (Abril- Junio</td>
+<td>- Comienzan lluvias</td>
+<td>ABRIL</td>
+</tr>
+<tr class="odd">
+<td>3 de mayo, Lorica; Fundación de la ciudad. Comparasas, bailes,
+presentaciones, pitos y flautas</td>
+<td>- Siembra yuca, maíz, plátano, arroz criollo - Fin de pesca en pozos
+(Enero-mayo)</td>
+<td>Aumentan lluvias</td>
+<td>MAYO</td>
+</tr>
+<tr class="even">
+<td>16 de junio: Virgen del carmen, procesión. - Día del campesino
+-</td>
+<td>- Semilleros - Adecuación</td>
+<td>Lluvias</td>
+<td>JUNIO</td>
+</tr>
+<tr class="odd">
+<td>Festival del porro en San Pelayo</td>
+<td></td>
+<td>Lluvias</td>
+<td>JULIO</td>
+</tr>
+<tr class="even">
+<td>Fiesta de San Bernardo y San Antero</td>
+<td>Cosecha primer semestre: Arroz forastero, arroz, maíz, siembra
+plátano (crece menos la mata y resiste al viento) - Terrateniente Elías
+Milane siembra algodón en su latifundion.</td>
+<td></td>
+<td>AGOSTO</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td>Algunos años se presentan inundaciones</td>
+<td>SEPTIEMBRE</td>
+</tr>
+<tr class="even">
+<td>7 octubre, La Doctrina: Fiestas patronales</td>
+<td>Desde 2000 en octubre se descarga agua desde Urrá</td>
+<td></td>
+<td>OCTUBRE</td>
+</tr>
+<tr class="odd">
+<td>Fiesta de carnavales del 11 de noviembre</td>
+<td></td>
+<td>- Reproducción hicotéa (nov- ene)</td>
+<td>NOVIEMBRE</td>
+</tr>
+<tr class="even">
+<td>8 de diciembre: Festival de la Chicha en “El Carito” - Festival del
+fandango e’Remolino. - Fandango en barrio Remolino en Lorica</td>
+<td>- Recolecta arroz, maíz y frijol - Pesca tradicional del pozos - 25
+y 31 alta concentración de fumigaciones (“el regalo de navidad”)</td>
+<td>- Hasta 1999 había subienda sagrada todos los 8 de diciembre -
+Neblinas - En 1999 hubo mortandad de peces</td>
+<td>DICIEMBRE</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Emerge de la memoria:
+<ul>
+<li>Entre marrzo y abril de 1972 hubo una masacre de estudiantes en
+Lorica</li>
+<li>Las fumigaciones trajeron envenenamiento de animales, mortandad de
+peces. No llega la CVS a la zona rural. (Abril de 2018) en diciembre de
+1999 también hubo otra mortandad de peces, la CVS probó el daño y Elias
+Milane fue obligado a pagar 20 millones pero comunidad no aceptó los
+mercados que este ofreció y solicitó en cambio la rehabilitacion del
+caño</li>
+<li>1978: Hora cero de la Ciénaga. Lucha en San Pablo.</li>
+<li>Pesca tradicional por temporadas. Artificial en estanques y
+criaderos todo el año</li>
+<li>Latifundios: San Pablo, San Cristán (Ganadería extensiva), Sabanal,
+Carolina (también de Elias Milane), Nestor López Chaux</li>
+<li>Afectaciones: Han venido desde europa a mirar. Afecta a todos hasta
+a los terratenientes. A medida que se pierde el Caño Bugre se pierde el
+flujo de agua hacia la ciénaga.</li>
+<li>“Vengo desplazado de la desembocadura de San Bernardo”</li>
+<li>“Hay 5 ríos taponeados y eso es lo que da ocasión que se afecten las
+comunidades” , “Antes sembrábamos en las orillas de los ríos, ahora nos
+llega el río y nos aplasta”</li>
+</ul></li>
+</ul>
+
+ 
+ 
+ 

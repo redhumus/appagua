@@ -1,0 +1,85 @@
+[[extend "layout.html"]]
+
+[[block page_head]]
+    <title>Generación de Gráficos</title>
+    <!-- Incluir los estilos de Plotly -->
+    <link rel="stylesheet" href="https://cdn.plot.ly/plotly-2.4.2.min.css" />
+[[end]]
+
+[[block content]]
+    <div class="container">
+        <h1>Producción</h1>
+
+        <!-- Formulario -->
+        <form id="produccion-form">
+            <div>
+                <label for="variable-dropdown">Variable:</label>
+                <select id="variable-dropdown" name="variable">
+                    <option value="Area Sembrada">Área Sembrada</option>
+                    <option value="Area Cosechada">Área Cosechada</option>
+                    <option value="Produccion (ton)">Producción (ton)</option>
+                    <option value="Rendimiento (ha/ton)">Rendimiento (ha/ton)</option>
+                </select>
+            </div>
+            <div>
+                <label for="product-dropdown">Productos:</label>
+                <select id="product-dropdown" name="productos" multiple>
+                    <!-- Aquí puedes generar dinámicamente las opciones de los productos en tu función produccion de Py4web -->
+                    <option value="Producto 1">Producto 1</option>
+                    <option value="Producto 2">Producto 2</option>
+                    <option value="Producto 3">Producto 3</option>
+                </select>
+            </div>
+            <div>
+                <label for="chart-type-dropdown">Tipo de gráfico:</label>
+                <select id="chart-type-dropdown" name="chart-type">
+                    <option value="bar">Barra</option>
+                    <option value="line">Línea</option>
+                    <option value="scatter">Dispersión</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit">Generar Gráfico</button>
+            </div>
+        </form>
+
+        <!-- Contenedor para el gráfico -->
+        <div id="chart-container"></div>
+    </div>
+
+    <!-- Incluir el script de Plotly -->
+    <script src="https://cdn.plot.ly/plotly-2.4.2.min.js"></script>
+    <!-- Script para generar el gráfico utilizando Plotly -->
+    <script>
+        document.getElementById('produccion-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var form = new FormData(event.target);
+            var variable = form.get('variable');
+            var productos = Array.from(form.getAll('productos'));
+            var chartType = form.get('chart-type');
+
+            // Realiza una petición a la función produccion de Py4web pasando los valores seleccionados
+            fetch('/agricola', {
+                method: 'POST',
+                body: JSON.stringify({
+                    variable: variable,
+                    productos: productos,
+                    chartType: chartType
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Renderiza el gráfico en el contenedor
+                var chartContainer = document.getElementById('chart-container');
+                Plotly.newPlot(chartContainer, data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+[[end]]
+

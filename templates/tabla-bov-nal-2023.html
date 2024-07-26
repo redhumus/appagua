@@ -1,0 +1,34 @@
+[[extend "layout.html"]]
+
+
+<h1>Tabla</h1>
+
+<form action="[[=URL('tablabovcord_b')]]" method="get">
+  <label for="departamentos">Departamentos:</label>
+  <select id="departamentos" name="departamentos" multiple>
+    [[for departamento in departamentos:]]
+    <option value="[[=departamento]]" [[='selected' if departamento in request.query.getlist('departamentos', []) else '']]>[[=departamento]]</option>
+    [[pass]]
+  </select>
+  
+  <label for="municipios">Municipios:</label>
+  <select id="municipios" name="municipios" multiple>
+    [[for municipio in municipios:]]
+    <option value="[[=municipio]]" [[='selected' if municipio in request.query.getlist('municipios', []) else '']]>[[=municipio]]</option>
+    [[pass]]
+  </select>
+  
+  <button type="submit">Filtrar</button>
+</form>
+
+[[=XML(html_table)]]
+
+<form action="[[=URL('download_table')]]" method="post">
+  <input type="hidden" name="html_table" value="[[=XML(html_table)]]">
+  <button type="submit" name="format" value="markdown">Descargar como Markdown</button>
+  <button type="submit" name="format" value="html">Descargar como HTML</button>
+</form>
+
+
+    
+<a href="https://www.ica.gov.co/areas/pecuaria/servicios/epidemiologia-veterinaria/censos-2016/censo-2018">Ir a la Fuente</a>

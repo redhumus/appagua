@@ -1,0 +1,90 @@
+[[extend "layout.html"]]
+
+
+[[block page_head]]
+
+    <title>Tabla de Contenido Números y estadísticas del Bajo Sinú</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        li:before {
+            content: "▸";
+            margin-right: 5px;
+            color: #007bff;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+
+[[end]]
+
+    <h1>Tabla de Contenido</h1>
+
+    <div class="section">
+        <h2 class="section-title">Gráficos</h2>
+        <ul>
+            <li><a href="[[=URL('grafbovcord_a')]]">Bovinos Córdoba 2004-2009 (Gráfico) Fuente:UPRA</a></li>
+            <li><a href="#grafico2">Gráfico 2</a></li>
+            <li><a href="#grafico3">Gráfico 3</a></li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Tablas</h2>
+        <ul>
+            <li><a href="[[=URL('tablabovcord_a')]]">Bovinos Córdoba 2004-2009 (Tabla) Fuente:UPRA</a></li>
+            <li><a href="#tabla2">Tabla 2</a></li>
+            <li><a href="#tabla3">Tabla 3</a></li>
+        </ul>
+    </div>
+
+    <!-- Inserta aquí tus gráficos y tablas con los IDs correspondientes -->
+
+    <div id="grafico1">
+        <!-- Código del gráfico 1 -->
+    </div>
+
+    <div id="grafico2">
+        <!-- Código del gráfico 2 -->
+    </div>
+
+    <div id="grafico3">
+        <!-- Código del gráfico 3 -->
+    </div>
+
+    <div id="tabla1">
+        <!-- Código de la tabla 1 -->
+    </div>
+
+    <div id="tabla2">
+        <!-- Código de la tabla 2 -->
+    </div>
+
+    <div id="tabla3">
+        <!-- Código de la tabla 3 -->
+    </div>
+
+

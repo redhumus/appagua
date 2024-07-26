@@ -1,0 +1,120 @@
+[[extend "layout.html"]]
+
+[[block page_head]]
+    <title>Generación de Gráficos</title>
+    <!-- Incluir los estilos de Plotly -->
+    <link rel="stylesheet" href="https://cdn.plot.ly/plotly-2.4.2.min.css" />
+    
+        <!-- Incluir jQuery desde un CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <!-- Incluir Plotly desde un CDN -->
+    <script src="https://cdn.plot.ly/plotly-2.4.2.min.js"></script>
+    
+[[end]]
+
+[[block content]]
+
+
+<div>
+    <form>
+        <label for="variable_dropdown">Variable:</label>
+        <select id="variable_dropdown" name="variable_dropdown" onchange="generateOutput()">
+            [[ for option in variable_dropdown or []: ]]
+            <option value="[[= option['value'] ]]">[[= option['label'] ]]</option>
+            [[ pass ]]
+        </select>
+
+        <label for="producto_dropdown">Producto:</label>
+        <select id="producto_dropdown" name="producto_dropdown[]" multiple size="4" onchange="generateOutput()"  >
+            [[ for option in product_dropdown or []: ]]
+                <option value="[[= option['value'] ]]">[[= option['label'] ]]</option>
+            [[ pass ]]
+        </select>
+
+        <label for="municipio_dropdown">Municipio:</label>
+        <select id="municipio_dropdown" name="municipio_dropdown[]" multiple size="4" onchange="generateOutput()">
+            [[ for option in municipio_dropdown or []: ]]
+                <option value="[[= option['value'] ]]">[[= option['label'] ]]</option>
+            [[ pass ]]
+        </select>
+        
+        <label for="index_dropdown">Index:</label>
+        <select id="index_dropdown" name="index_dropdown[]" onchange="generateOutput()">
+            [[ for option in index_dropdown or []: ]]
+                <option value="[[= option['value'] ]]">[[= option['label'] ]]</option>
+            [[ pass ]]
+        </select>            
+            
+
+        <label for="x_axis_dropdown">Eje X:</label>
+        <select id="x_axis_dropdown" name="x_axis_dropdown[]" onchange="generateOutput()">
+            [[ for option in x_axis_dropdown or []: ]]
+                <option value="[[= option['value'] ]]">[[= option['label'] ]]</option>
+            [[ pass ]]
+        </select> 
+
+        <label for="y_axis_dropdown">Eje Y:</label>
+        <select id="y_axis_dropdown" name="y_axis_dropdown[]" onchange="generateOutput()">
+            [[ for option in y_axis_dropdown or []: ]]
+                <option value="[[= option['value'] ]]">[[= option['label'] ]]</option>
+            [[ pass ]]
+        </select> 
+
+        <label for="chart_type_dropdown">Tipo gráfico:</label>
+        <select id="chart_type_dropdown" name="chart_type_dropdown[]" onchange="generateOutput()">
+            [[ for option in chart_type_dropdown or []: ]]
+                <option value="[[= option['value'] ]]">[[= option['label'] ]]</option>
+            [[ pass ]]
+        </select>             
+
+    </form>
+
+    <!-- Espacio para mostrar la tabla -->
+    <div id="tabla_output">
+        {{=table_data}}
+    </div>
+
+
+    <!-- Espacio para mostrar la visualización -->
+    <div id="visualizacion"></div>
+
+    <script>
+        function mostrarVisualizacion() {
+            var variableSeleccionada = document.getElementById('variable_dropdown').value;
+            var productoSeleccionado = document.getElementById('producto_dropdown').value;
+            var municipioSeleccionado = document.getElementById('municipio_dropdown').value; 
+            var indexSeleccionado = document.getElementById('index_dropdown').value; 
+            var x_axisSeleccionado = document.getElementById('x_axis_dropdown').value; 
+            var y_axisSeleccionado = document.getElementById('y_axis_dropdown').value;             
+            var charttypeSeleccionado = document.getElementById('chart_type_dropdown').value; 
+            
+            // Hacer una solicitud al servidor para obtener datos con las variables seleccionadas
+            fetch(`/agua/obtener_datos?variable=${variableSeleccionada}&producto=${productoSeleccionado}&municipio=${municipioSeleccionado}&index=${indexSeleccionado}&x_axis=${x_axisSeleccionado}&y_axis=${y_axisSeleccionado}&charttype=${charttypeSeleccionado}`)
+                .then(response => response.json())
+                .then(data => {
+                // Actualizar la visualización en 'visualizacion' utilizando los datos recibidos
+                // Aquí puedes usar bibliotecas de gráficos como Plotly
+                // y actualizar el contenido de 'tabla_output' y 'chart_output'
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+
+    <!-- Funcion para ver tabla después de incluir jQuery y otras bibliotecas necesarias -->
+    <script>
+        function generateOutput() {
+            // Lógica para generar y mostrar la tabla en el lado del cliente
+            // Utiliza el contenido de table_data según sea necesario
+            var tableData = "{{=XML(table_data)}}";
+            document.getElementById('tabla_output').innerHTML = tableData;
+        }
+
+    // Asegúrate de llamar a generateOutput() cuando sea necesario, por ejemplo, en eventos de cambio.
+    </script>
+
+
+</div>
+
+
+[[end]]

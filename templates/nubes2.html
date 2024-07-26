@@ -1,0 +1,39 @@
+[[extend "layout.html"]]
+
+
+<div id="app">
+    <div id="wordcloud"></div>
+    
+</div>
+
+<script src="https://d3js.org/d3.v6.min.js"></script>
+
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            wordCloudData: []
+        },
+        mounted: function () {
+            // Obtiene los datos de la nube de palabras desde el servidor
+            fetch('/nubes2')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Datos recibidos:', data); // Agrega este console.log para verificar los datos recibidos
+                    this.wordCloudData = data;
+                    // this.drawWordCloud();  // Vamos a comentar esto por ahora para asegurarnos de que los datos se reciban correctamente
+                })
+                .catch(error => {
+                    console.error('Error al obtener los datos:', error); // Agrega un manejo de errores para verificar problemas en la solicitud HTTP
+                });
+        },
+        methods: {
+            drawWordCloud: function () {
+                // Código para dibujar la nube de palabras con D3.js o Chart.js
+            }
+        }
+    });
+</script>
+
+

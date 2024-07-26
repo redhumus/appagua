@@ -1,0 +1,15 @@
+[[extend "layout.html"]]
+
+
+  <h1>Registro de calendario</h1>
+[[=form]]
+
+  [[for row in rows:]]
+  
+ <ul>
+  [[for row in rows:]]
+  <li>[[=row.mes]]: [[=row.tiempo]] ([[=row.actividades]]) ([[=row.fiestas]]) <a href="../update_form/[[=row.mes]]">edit</a></li>
+  [[pass]]
+  <li><a href="../create_form">create</a></li>
+</ul>
+
